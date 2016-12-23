@@ -22,3 +22,6 @@ logs/
 ghostdriver.log
 
 htmlcov
+
+results_*
+.idea
