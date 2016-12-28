@@ -144,7 +144,8 @@ def do_rollouts_serial(env, agent, timestep_limit, n_timesteps, seed_iter):
         path = rollout(env, agent, timestep_limit)
         paths.append(path)
         timesteps_sofar += pathlength(path)
-        if timesteps_sofar > n_timesteps:
+        print 'do_rollouts_serial: timesteps_sofar = ', timesteps_sofar, ' n_timesteps = ', n_timesteps
+        if timesteps_sofar >= n_timesteps:
             break
     return paths
 

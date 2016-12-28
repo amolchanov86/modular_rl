@@ -73,11 +73,13 @@ def make_cnns(ob_space, ac_space, cfg):
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! AgentZoo: CNN agent is created"
     net.add(Convolution2D(32, 4, 4, border_mode='same',
                             input_shape=ob_space.shape,
-                          activation=cfg["activation"]))
-    net.add(Convolution2D(32, 4, 4, activation=cfg["activation"]))
+                            activation=cfg["activation"],
+                            subsample=(2, 2)))
+    net.add(Convolution2D(32, 4, 4, activation=cfg["activation"],
+                            subsample=(2, 2)))
     net.add(Convolution2D(32, 4, 4, border_mode='same', activation=cfg["activation"]))
     net.add(Flatten())
-    net.add(Dense(128, activation=cfg["activation"])) #200 in DDPG paper
+    net.add(Dense(256, activation=cfg["activation"])) #200 in DDPG paper
     net.add(Dense(128, activation=cfg["activation"]))
 
     # Creating the output layer
@@ -101,11 +103,13 @@ def make_cnns(ob_space, ac_space, cfg):
     print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! AgentZoo: CNN Vf is created"
     vfnet.add(Convolution2D(32, 4, 4, border_mode='same',
                             input_shape=ob_space.shape,
-                            activation=cfg["activation"]) )
-    vfnet.add(Convolution2D(32, 4, 4, activation=cfg["activation"]))
+                            activation=cfg["activation"],
+                            subsample=(2, 2)))
+    vfnet.add(Convolution2D(32, 4, 4, activation=cfg["activation"],
+                            subsample=(2, 2)))
     vfnet.add(Convolution2D(32, 4, 4, border_mode='same', activation=cfg["activation"]))
     vfnet.add(Flatten())
-    vfnet.add(Dense(128, activation=cfg["activation"])) #200 in DDPG paper
+    vfnet.add(Dense(256, activation=cfg["activation"])) #200 in DDPG paper
     vfnet.add(Dense(128, activation=cfg["activation"]))
     vfnet.add(Dense(1))
     

@@ -23,5 +23,5 @@ ghostdriver.log
 
 htmlcov
 
-results_*
+results*
 .idea
