@@ -265,8 +265,8 @@ def make_norm_env(env, normalize=True):
                     break
             reward_sum = np.sum(rewards)
             self.reward_sum_ep += reward_sum
-            if self.reward_sum_ep < -1:
-                term = True
+            # if self.reward_sum_ep < -1:
+            #     term = True
 
             return self.obs_cur, reward_sum, term, info
 
