@@ -104,6 +104,8 @@ def get_paths(env, agent, cfg, seed_iter):
         raise NotImplementedError
     else:
         paths = do_rollouts_serial(env, agent, cfg["timestep_limit"], cfg["timesteps_per_batch"], seed_iter)
+        # print 'get_paths: paths type = ', type(paths), ' path_type = ', type(paths[0]['observation'])
+        # print 'get_paths: paths total = ', len(paths), ' timepoints = ', len(paths[0]['observation'])
     return paths
 
 
@@ -436,6 +438,11 @@ class NnVf(object):
         vtarg_n1 = concat([path["return"] for path in paths]).reshape(-1,1)
         return self.reg.fit(ob_no, vtarg_n1)
     def preproc(self, ob_no):
+        # Schulman added normalized time as another feature for low dimensional tasks
+        # But since it is hard to do for CNN, for images we don't do that
+        if isinstance(ob_no, np.ndarray):
+            if len(ob_no.shape) == 4:
+                return ob_no
         return concat([ob_no, np.arange(len(ob_no)).reshape(-1,1) / float(self.timestep_limit)], axis=1)
 
 

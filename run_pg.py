@@ -10,6 +10,7 @@ import argparse, sys, cPickle
 from tabulate import tabulate
 import shutil, os, logging
 import gym
+import env_postproc as env_proc
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -18,7 +19,14 @@ if __name__ == "__main__":
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
-    env = make(args.env)
+    env_src = make(args.env)
+    env = env_proc.make_norm_env(env_src, normalize=False)
+
+    # Bugfix: render should be called before agents
+    env.reset()
+    env.render()
+
+
     env_spec = env.spec
     mondir = args.outfile + ".dir"
     if os.path.exists(mondir): shutil.rmtree(mondir)
