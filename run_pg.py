@@ -33,6 +33,7 @@ if __name__ == "__main__":
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
     env.monitor.start(mondir, video_callable=None if args.video else VIDEO_NEVER)
+    #env_src = gym.wrappers.Monitor(env_src, mondir, video_callable=None if args.video else VIDEO_NEVER)
     agent_ctor = get_agent_cls(args.agent)
     update_argument_parser(parser, agent_ctor.options)
     args = parser.parse_args()
