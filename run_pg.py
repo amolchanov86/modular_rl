@@ -24,7 +24,8 @@ if __name__ == "__main__":
 
     # Bugfix: render should be called before agents
     env.reset()
-    env.render()
+    if args.plot:
+        env.render()
 
 
     env_spec = env.spec
