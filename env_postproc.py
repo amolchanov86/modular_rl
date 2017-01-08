@@ -9,7 +9,6 @@ import gym
 
 
 
-
 def show_env_param(env):
     envpar = {}
     envpar['state_shape'] = env.observation_space.shape
@@ -43,7 +42,7 @@ def make_norm_env(env, normalize=True):
             self.__dict__ = {}
             self.__dict__.update(env_.__dict__) # transfer properties
             self.env = env_
-            self.monitor = env_.monitor
+            # self.monitor = env_.monitor
 
             if normalize:
                 # Normalization parameters (scale,mean) for observation,actions and rewards

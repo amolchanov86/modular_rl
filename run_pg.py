@@ -10,6 +10,7 @@ import argparse, sys, cPickle
 from tabulate import tabulate
 import shutil, os, logging
 import gym
+from gym import wrappers
 import env_postproc as env_proc
 
 if __name__ == "__main__":
@@ -32,8 +33,10 @@ if __name__ == "__main__":
     mondir = args.outfile + ".dir"
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
-    env.monitor.start(mondir, video_callable=None if args.video else VIDEO_NEVER)
-    #env_src = gym.wrappers.Monitor(env_src, mondir, video_callable=None if args.video else VIDEO_NEVER)
+    #env.monitor.start(mondir, video_callable=None if args.video else VIDEO_NEVER)
+    env_src = wrappers.Monitor(env_src, mondir, video_callable=None if args.video else VIDEO_NEVER)
+
+
     agent_ctor = get_agent_cls(args.agent)
     update_argument_parser(parser, agent_ctor.options)
     args = parser.parse_args()
