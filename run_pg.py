@@ -41,7 +41,8 @@ if __name__ == "__main__":
     update_argument_parser(parser, agent_ctor.options)
     args = parser.parse_args()
     if args.timestep_limit == 0: 
-        args.timestep_limit = env_spec.timestep_limit    
+        # args.timestep_limit = env_spec.timestep_limit
+        args.timestep_limit = env_src.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
     cfg = args.__dict__
     np.random.seed(args.seed)
     agent = agent_ctor(env.observation_space, env.action_space, cfg)
