@@ -69,6 +69,7 @@ if __name__ == "__main__":
                 hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
         # Plot
         if args.plot:
+            print "Animating rollout ..."
             animate_rollout(env, agent, min(500, args.timestep_limit))
 
     run_policy_gradient_algorithm(env, agent, callback=callback, usercfg = cfg)
