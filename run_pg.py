@@ -11,7 +11,7 @@ from tabulate import tabulate
 import shutil, os, logging
 import gym
 from gym import wrappers
-import env_postproc as env_proc
+import env_postproc_wrapper as env_proc
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -30,19 +30,29 @@ if __name__ == "__main__":
 
 
     env_spec = env.spec
-    mondir = args.outfile + ".dir"
+    fname = args.outfile[:-3] if args.outfile[-3:] == '.h5' else args.outfile
+    mondir = fname + ".dir"
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
-    #env.monitor.start(mondir, video_callable=None if args.video else VIDEO_NEVER)
-    env_src = wrappers.Monitor(env_src, mondir, video_callable=None if args.video else VIDEO_NEVER)
+
+    # --- MONITORING
+    # Video scheduler (function that states when we should record a video)
+    video_step_episodes = args.video_record_every
+    def video_schedule(episode_id):
+        global video_step_episodes
+        result = (episode_id % video_step_episodes == 0)
+        if result:
+            print "!!!!!!!!!!!!!!!!!!!! Recording a video !!!!!!!!!!!!!!!!!"
+        return result
+
+    env = wrappers.Monitor(env, mondir, video_callable=video_schedule if args.video_record_every else VIDEO_NEVER)
 
 
     agent_ctor = get_agent_cls(args.agent)
     update_argument_parser(parser, agent_ctor.options)
     args = parser.parse_args()
-    if args.timestep_limit == 0: 
-        # args.timestep_limit = env_spec.timestep_limit
-        args.timestep_limit = env_src.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+    if args.timestep_limit == 0 or args.video_record_every:
+        args.timestep_limit = env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
     cfg = args.__dict__
     np.random.seed(args.seed)
     agent = agent_ctor(env.observation_space, env.action_space, cfg)

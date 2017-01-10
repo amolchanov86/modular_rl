@@ -32,8 +32,7 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     hdf, diagnostics = prepare_h5_file(args)
 
-    if args.timestep_limit == 0: 
-        # args.timestep_limit = env_spec.timestep_limit
+    if args.timestep_limit == 0:
         args.timestep_limit = env_spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
 
 

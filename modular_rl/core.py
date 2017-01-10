@@ -152,15 +152,30 @@ def do_rollouts_serial(env, agent, timestep_limit, n_timesteps, seed_iter):
 def pathlength(path):
     return len(path["action"])
 
-def animate_rollout(env, agent, n_timesteps,delay=.01):
+# def animate_rollout(env, agent, n_timesteps, delay=.01):
+#     ob = env.reset()
+#     env.render()
+#     for i in xrange(n_timesteps):
+#         a, _info = agent.act(ob)
+#         (ob, _rew, done, _info) = env.step(a)
+#         env.render()
+#         if done:
+#             print("terminated after %s timesteps"%i)
+#             break
+#         time.sleep(delay)
+
+def animate_rollout(env, agent, n_timesteps, delay=.01):
     ob = env.reset()
     env.render()
-    for i in xrange(n_timesteps):
+    done = False
+    i = 0
+    while not done:
+        i += 1
         a, _info = agent.act(ob)
         (ob, _rew, done, _info) = env.step(a)
         env.render()
         if done:
-            print("terminated after %s timesteps"%i)
+            print("terminated after %s timesteps" % i)
             break
         time.sleep(delay)
 

@@ -100,7 +100,7 @@ GENERAL_OPTIONS = [
     ("use_hdf",int,0,"whether to make an hdf5 file with results and snapshots"),
     ("snapshot_every",int,0,"how often to snapshot"),
     ("load_snapshot",str,"","path to snapshot"),
-    ("video",int,1,"whether to record video")
+    ("video_record_every",int,1,"how often to record video. 0 == never record")
 ]
 
 # ================================================================
@@ -111,6 +111,7 @@ GENERAL_OPTIONS = [
 def prepare_h5_file(args):
     outfile_default = "/tmp/a.h5"
     fname = args.outfile or outfile_default
+    fname = fname if fname[-3:] == '.h5' else (fname + '.h5')
     if osp.exists(fname) and fname != outfile_default:
         raw_input("output file %s already exists. press enter to continue. (exit with ctrl-C)"%fname)
     import h5py

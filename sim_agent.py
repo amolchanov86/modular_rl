@@ -52,7 +52,6 @@ def main():
     agent = cPickle.loads(hdf['agent_snapshots'][snapname].value)
     agent.stochastic=False
 
-    # timestep_limit = args.timestep_limit or env.spec.timestep_limit
     timestep_limit = args.timestep_limit or env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
 
     while True:
