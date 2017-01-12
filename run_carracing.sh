@@ -11,5 +11,5 @@ python ./run_pg.py --env CarRacing-v0\
  --n_iter 250\
  --snapshot_every 10\
  --video_record_every 10\
- --timesteps_per_batch 4000\
+ --timesteps_per_batch 3200\
  --use_hdf 1 "$@"
