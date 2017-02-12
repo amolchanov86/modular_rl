@@ -109,6 +109,7 @@ GENERAL_OPTIONS = [
 
 
 def prepare_h5_file(args):
+    # Making names and opening h5 file
     outfile_default = "/tmp/a.h5"
     fname = args.outfile or outfile_default
     fname = fname if fname[-3:] == '.h5' else (fname + '.h5')
@@ -116,18 +117,27 @@ def prepare_h5_file(args):
         raw_input("output file %s already exists. press enter to continue. (exit with ctrl-C)"%fname)
     import h5py
     hdf = h5py.File(fname,"w")
+
+    # Saving parameters directly from args
     hdf.create_group('params')
     for (param,val) in args.__dict__.items():
         try: hdf['params'][param] = val
         except (ValueError,TypeError):
             print("not storing parameter",param)
+
+    # Preparing handler for saving diagnostics that will be executed upon exit (smart move)
     diagnostics = defaultdict(list)
     print("Saving results to %s"%fname)
     def save():
         hdf.create_group("diagnostics")
         for (diagname, val) in diagnostics.items():
             hdf["diagnostics"][diagname] = val
+
+    # Saving command line itself
     hdf["cmd"] = " ".join(sys.argv)
+
+    # Save will be executed upon normal exit of interpreter
+    # NOTE: The functions registered via this module are not called when the program is killed by a signal not handled by Python
     atexit.register(save)
 
     return hdf, diagnostics

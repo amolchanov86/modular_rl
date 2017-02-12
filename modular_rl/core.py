@@ -14,6 +14,13 @@ from keras.layers.core import Layer
 # ================================================================
 
 def get_agent_cls(name):
+    """
+    Function gets function of the agent constructor given string like 'modular_rl.agentzoo.TrpoAgent'
+    :param name: (String) name of the module
+    :return:
+    """
+    # Rightmost only 1 righmost split by dot.
+    # Ie. modular_rl.agentzoo.TrpoAgent will be 'modular_rl.agentzoo' + 'TrpoAgent'
     p, m = name.rsplit('.', 1)
     mod = import_module(p)
     constructor = getattr(mod, m)
