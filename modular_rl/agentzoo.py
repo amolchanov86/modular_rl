@@ -12,6 +12,7 @@ from keras.models import Sequential
 from keras.layers.advanced_activations import LeakyReLU
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
+from keras.layers.normalization import  BatchNormalization
 from keras.utils import np_utils
 
 from modular_rl.trpo import TrpoUpdater
@@ -19,7 +20,7 @@ from modular_rl.ppo import PpoLbfgsUpdater, PpoSgdUpdater
 
 MLP_OPTIONS = [
     ("hid_sizes", comma_sep_ints, [64,64], "Sizes of hidden layers of MLP"),
-    ("activation", str, "tanh", "nonlinearity")
+    ("activation", str, "relu", "nonlinearity")
 ]
 
 def make_mlps(ob_space, ac_space, cfg):
@@ -116,6 +117,73 @@ def make_cnns(ob_space, ac_space, cfg):
     baseline = NnVf(vfnet, cfg["timestep_limit"], dict(mixfrac=0.1))
     return policy, baseline
 
+
+
+def make_cnns_oclmnist(ob_space, ac_space, cfg):
+    print 'AGENTZOO: Creating OCLMNIST CNNs ...'
+    assert isinstance(ob_space, Box)
+    # hid_sizes = cfg["hid_sizes"]
+
+    ####################################################################################
+    ## SHARED
+    # Creating model for shared visual features
+    vis_feat_model = keras_tools.oclmnist_vis_feat(input_shape=ob_space.shape,
+                                                   out_num=128)
+    if isinstance(ac_space, Box):
+        outdim = ac_space.shape[0]
+        probtype = DiagGauss(outdim)
+    elif isinstance(ac_space, Discrete):
+        outdim = ac_space.n
+        probtype = Categorical(outdim)
+
+    ####################################################################################
+    ## AGENT NET
+    print "AGENTZOO: Building actor network ..."
+    input_img = Input(shape=ob_space.shape)
+    x_vis = vis_feat_model(input_img, activation=cfg["activation"])
+
+    x_act = Dense(128, activation=cfg["activation"])(x_vis)
+    x_act = BatchNormalization(mode=1)(x_act)
+    x_act = Activation(cfg["activation"])(x_act)
+
+    x_act = Dense(128, activation=cfg["activation"])(x_act)
+    x_act = BatchNormalization(mode=1)(x_act)
+    x_act = Activation(cfg["activation"])(x_act)
+
+    x_act = Dense(outdim, activation=cfg["activation"])(x_act)
+    act_out = Activation("tanh")(x_act)
+    net = Model(input=input_img, output=[act_out])
+
+    # Creating the output layer
+    if isinstance(ac_space, Box):
+        net.add(Dense(outdim))
+        Wlast = net.layers[-1].W
+        Wlast.set_value(Wlast.get_value(borrow=True) * 0.1)
+        net.add(ConcatFixedStd())
+    else:
+        net.add(Dense(outdim, activation="softmax"))
+        Wlast = net.layers[-1].W
+        Wlast.set_value(Wlast.get_value(borrow=True) * 0.1)
+    policy = StochPolicyKeras(net, probtype)
+
+
+    ####################################################################################
+    ## VF NET
+    print "AGENTZOO: Building value networks ..."
+    vfnet_input_img = Input(shape=ob_space.shape)
+    x_vf_vis = vis_feat_model(vfnet_input_img, activation=cfg["activation"])
+
+    x_vf = Dense(128, activation=cfg["activation"])(x_vf_vis)
+    x_vf = BatchNormalization(mode=1)(x_vf)
+    x_vf = Activation(cfg["activation"])(x_vf)
+
+    vf_out = Dense(1, activation=cfg["activation"])(x_vf)
+    vfnet = Model(input=vfnet_input_img, output=[vf_out])
+
+    baseline = NnVf(vfnet, cfg["timestep_limit"], dict(mixfrac=0.1))
+    return policy, baseline
+
+
 def make_deterministic_mlp(ob_space, ac_space, cfg):
     assert isinstance(ob_space, Box)
     hid_sizes = cfg["hid_sizes"]
@@ -183,7 +251,7 @@ class TrpoAgent(AgentWithPolicy):
     def __init__(self, ob_space, ac_space, usercfg):
         cfg = update_default_config(self.options, usercfg)
         # policy, self.baseline = make_mlps(ob_space, ac_space, cfg)
-        policy, self.baseline = make_cnns(ob_space, ac_space, cfg)
+        policy, self.baseline = make_cnns_oclmnist(ob_space, ac_space, cfg)
         obfilter, rewfilter = make_filters(cfg, ob_space)
         self.updater = TrpoUpdater(policy, cfg)
         AgentWithPolicy.__init__(self, policy, obfilter, rewfilter)

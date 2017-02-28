@@ -2,8 +2,6 @@
 """
 This script runs a policy gradient algorithm
 """
-
-
 from gym.envs import make
 from modular_rl import *
 import argparse, sys, cPickle
@@ -12,6 +10,41 @@ import shutil, os, logging
 import gym
 from gym import wrappers
 import env_postproc_wrapper as env_proc
+
+ENV_OPTIONS = [
+    ("env_norm", bool, True, "Should we normalize the environment"),
+    ("vis_force", bool, True),
+    ("classif_snapshot", str, "weights/keras_classifier.h5")
+]
+
+def wrap_env(env, logdir_root, cfg):
+    """
+    Set of wrappers for env normalization and added functionality
+    :param env:
+    :param logdir_root:
+    :param cfg:
+    :return:
+    """
+
+    if logdir_root[-1] != '/':
+        logdir_root += '/'
+
+    if env.spec.id[:6] == 'Blocks':
+        env = baw.action2dWrap(env)
+
+    env = normwrap.make_norm_env(env=env,
+                                 normalize=cfg['env_norm'])
+
+    if env.spec.id[:6] == 'Blocks':
+        if cfg['vis_force']:
+            print_warn('Force visualization wrapper turned on')
+            env = gym_blocks.wrappers.Visualization(env)
+
+        env = brw.nnetReward(env, nnet_params=cfg,
+                             log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
+
+        env.unwrapped.step_limit = cfg['timestep_limit']
+    return env
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -27,11 +60,15 @@ if __name__ == "__main__":
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
 
+
     ###############################################################################
     # MAKING ENVIRONMENT
     env_src = make(args.env)
-    env = env_proc.make_norm_env(env_src, normalize=False)
-    env_spec = env.spec
+
+    parser = update_argument_parser(parser, ENV_OPTIONS)
+    cfg = args.__dict__
+    env = wrap_env(env, cfg=cfg, logdir_root=mondir)
+
     # Bugfix: render should be called before agents
     env.reset()
     if args.plot:
@@ -46,6 +83,8 @@ if __name__ == "__main__":
         if result:
             print "!!!!!!!!!!!!!!!!!!!! Recording a video !!!!!!!!!!!!!!!!!"
         return result
+
+
     env = wrappers.Monitor(env, mondir, video_callable=video_schedule if args.video_record_every else VIDEO_NEVER)
 
     ###############################################################################
@@ -62,11 +101,12 @@ if __name__ == "__main__":
 
     # Updating time step limit
     if args.timestep_limit == 0 or args.video_record_every:
-        args.timestep_limit = env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
+        if env.spec.id[:6] != 'Blocks': #For blocks we can actually control number of time steps
+            args.timestep_limit = env.spec.tags.get('wrapper_config.TimeLimit.max_episode_steps')
 
     # Initializing an agent
     # Here he just gets params dictionary from command line. I think it is just less convenient. I prefer yaml files
-    cfg = args.__dict__
+    # cfg = args.__dict__
     np.random.seed(args.seed)
     agent = agent_constructor(env.observation_space, env.action_space, cfg)
 
@@ -112,7 +152,7 @@ if __name__ == "__main__":
     ###############################################################################
     # CLEANING UP
     if args.use_hdf:
-        hdf['env_id'] = env_spec.id
+        hdf['env_id'] = env.spec.id
         try: hdf['env'] = np.array(cPickle.dumps(env, -1))
         except Exception: print "failed to pickle env" #pylint: disable=W0703
 
