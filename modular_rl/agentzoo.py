@@ -151,15 +151,16 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     input_img = Input(shape=ob_space.shape)
     x_vis = vis_feat_model(input_img)
 
-    x_act = Dense(128, activation=cfg["activation"])(x_vis)
+    x_act = Dense(128)(x_vis)
     if fc_layer_norm:
         x_act = BatchNormalization(mode=1)(x_act)
     x_act = Activation(cfg["activation"])(x_act)
 
-    x_act = Dense(128, activation=cfg["activation"])(x_act)
+    # x_act = Dense(128, activation=cfg["activation"])(x_act)
+    x_act = Dense(outdim)(x_act)
     if fc_layer_norm:
         x_act = BatchNormalization(mode=1)(x_act)
-    act_out = Activation(cfg["activation"])(x_act)
+    act_out = Activation("tanh")(x_act)
 
     # x_act = Dense(outdim, activation=cfg["activation"])(x_act)
     # act_out = Activation("tanh")(x_act)
@@ -187,12 +188,12 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     vfnet_input_img = Input(shape=ob_space.shape)
     x_vf_vis = vis_feat_model(vfnet_input_img)
 
-    x_vf = Dense(128, activation=cfg["activation"])(x_vf_vis)
+    x_vf = Dense(128)(x_vf_vis)
     if fc_layer_norm:
         x_vf = BatchNormalization(mode=1)(x_vf)
     x_vf = Activation(cfg["activation"])(x_vf)
 
-    vf_out = Dense(1, activation=cfg["activation"])(x_vf)
+    vf_out = Dense(1)(x_vf)
     vfnet = Model(input=vfnet_input_img, output=[vf_out])
 
     baseline = NnVf(vfnet, cfg["timestep_limit"], dict(mixfrac=0.1))

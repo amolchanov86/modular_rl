@@ -39,8 +39,8 @@ def wrap_env(env, logdir_root, cfg):
             print_warn('Force visualization wrapper turned on')
             env = gym_blocks.wrappers.Visualization(env)
 
-        # env = brw.nnetReward(env, nnet_params=cfg,
-        #                      log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
+        env = brw.nnetReward(env, nnet_params=cfg,
+                             log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
 
         env.unwrapped.step_limit = cfg['timestep_limit']
         env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
