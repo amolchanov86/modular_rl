@@ -18,6 +18,7 @@ from keras.utils import np_utils
 from modular_rl.trpo import TrpoUpdater
 from modular_rl.ppo import PpoLbfgsUpdater, PpoSgdUpdater
 from modular_rl.keras_tools import oclmnist_vis_feat
+from keras.layers import Input, merge
 
 MLP_OPTIONS = [
     ("hid_sizes", comma_sep_ints, [64,64], "Sizes of hidden layers of MLP"),

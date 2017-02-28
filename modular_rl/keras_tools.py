@@ -10,6 +10,7 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.utils.visualize_util import plot as keras_plot
 from keras import backend as K
+from keras.layers import Merge
 
 import numpy as np
 
@@ -87,6 +88,8 @@ def mean_coord(x, verbose=True):
     print 'cnt_h_array.shape = ', K.int_shape(cnt_h_array)
     print 'cnt_w_array.shape = ', K.int_shape(cnt_w_array)
 
+    print 'cnt_h_array type = ', type(cnt_h_array)
+
     # Finding weights for coordinates
     h_weights = K.sum(x, axis=h_axis)
     w_weights = K.sum(x, axis=w_axis)
@@ -108,7 +111,7 @@ def mean_coord(x, verbose=True):
     w_mean = K.sum(cnt_w_weighted, axis=2)
 
     # Packing everything together into a single Tensor
-    hw_mean = K.merge([h_mean, w_mean], mode='concat', axis=2)
+    hw_mean = Merge(mode='concat', axis=2)([h_mean, w_mean])
 
     if dim_ordering == 'tf':
         if verbose: print('TF ORDERING IS USED')
@@ -144,7 +147,7 @@ def fire_module(x, fire_id, squeeze=16, expand=64, activation='relu'):
     right = BatchNormalization()(right)
     right = Activation(activation, name=s_id + activation + exp3x3)(right)
 
-    x = merge([left, right], mode='concat', concat_axis=c_axis, name=s_id + 'concat')
+    x = Merge(mode='concat', concat_axis=c_axis)([left, right])
     return x
 
 
@@ -182,13 +185,14 @@ def oclmnist_vis_feat(input_shape, out_num=128, activation='relu'):
 
     ###############################################################
     # Spatial features
-    x_spat = Convolution2D(32, 3, 3, border_mode='same', name='conv4_spat')(x)
-    x_spat = mean_coord(x_spat)
-    x_spat = Dense(128)(x_spat)
-    x_spat = BatchNormalization(mode=1)(x_spat)
-    ###############################################################
-    # Merging
-    x_merged = K.merge([x_spat, x_nonspat], mode='sum')
+    # x_spat = Convolution2D(32, 3, 3, border_mode='same', name='conv4_spat')(x)
+    # # x_spat = mean_coord(x_spat)
+    # x_spat = Dense(128)(x_spat)
+    # x_spat = BatchNormalization(mode=1)(x_spat)
+    # ###############################################################
+    # # Merging
+    # x_merged = Merge(mode='sum')([x_spat, x_nonspat])
+    x_merged = x_nonspat
     out = Activation(activation, name='act_out')(x_merged)
 
     model = Model(input=input_img, output=[out])
