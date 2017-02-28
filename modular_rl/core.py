@@ -149,6 +149,8 @@ def rollout(env, agent, timestep_limit):
             break
     data = {k:np.array(v) for (k,v) in data.iteritems()}
     data["terminated"] = terminated
+
+    print 'rollout: rew_mean = ', np.mean(data["reward"])
     return data
 
 def do_rollouts_serial(env, agent, timestep_limit, n_timesteps, seed_iter):
@@ -185,15 +187,16 @@ def animate_rollout(env, agent, n_timesteps, delay=.01):
     done = False
     i = 0
     rew_sum = 0.0
+    reward = []
     while not done:
         i += 1
         a, _info = agent.act(ob)
         (ob, _rew, done, _info) = env.step(a)
-        rew_sum += _rew
+        reward.append(_rew)
         env.render()
         if done:
             print("terminated after %s timesteps" % i)
-            print("Rew avg = %f" % rew_sum / float(i))
+            print("Rew avg = %f" % np.mean(reward))
             break
         time.sleep(delay)
 
