@@ -79,6 +79,14 @@ PG_OPTIONS = [
     ("lam", float, 1.0, "lambda parameter from generalized advantage estimation"),
 ]
 
+ENV_OPTIONS = [
+    ("env_norm", bool, True, "Should we normalize the environment"),
+    ("vis_force", bool, False, "Should we visualize forces in blocks env"),
+    ("classif_snapshot", str, "weights/keras_classifier.h5", "Which snapshot to use for blocks classifier"),
+    ("timestep_limit", int, 0, "maximum length of trajectories")
+]
+
+
 def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
     cfg = update_default_config(PG_OPTIONS, usercfg)
     cfg.update(usercfg)

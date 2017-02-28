@@ -121,7 +121,7 @@ def mean_coord(x, verbose=True):
 ####################################################################################################
 # ARCHITECTURES
 
-def fire_module(x, fire_id, squeeze=16, expand=64, activation='relu'):
+def fire_module(x, fire_id, squeeze=16, expand=64, activation='relu', batch_norm=False):
     s_id = 'fire' + str(fire_id) + '/'
     dim_ordering = K.image_dim_ordering()
     if dim_ordering == 'tf':
@@ -136,22 +136,26 @@ def fire_module(x, fire_id, squeeze=16, expand=64, activation='relu'):
     exp3x3 = "expand3x3"
 
     x = Convolution2D(squeeze, 1, 1, border_mode='valid', name=s_id + sq1x1)(x)
-    x = BatchNormalization()(x)
+    if batch_norm:
+        x = BatchNormalization()(x)
     x = Activation(activation, name=s_id + activation + sq1x1)(x)
 
     left = Convolution2D(expand, 1, 1, border_mode='valid', name=s_id + exp1x1)(x)
-    left = BatchNormalization()(left)
+    if batch_norm:
+        left = BatchNormalization()(left)
     left = Activation(activation, name=s_id + activation + exp1x1)(left)
 
     right = Convolution2D(expand, 3, 3, border_mode='same', name=s_id + exp3x3)(x)
-    right = BatchNormalization()(right)
+    if batch_norm:
+        right = BatchNormalization()(right)
     right = Activation(activation, name=s_id + activation + exp3x3)(right)
 
-    x = Merge(mode='concat', concat_axis=c_axis)([left, right])
+    # x = Merge(mode='concat', concat_axis=c_axis)([left, right])
+    x = merge([left, right], mode='concat', concat_axis=c_axis)
     return x
 
 
-def oclmnist_vis_feat(input_shape, out_num=128, activation='relu'):
+def oclmnist_vis_feat(input_shape, out_num=128, activation='relu', batch_norm=False, fc_layer_norm=True):
     """
     Functional model for shared visual features
     :param out_num: (Int) number of classes
@@ -162,26 +166,28 @@ def oclmnist_vis_feat(input_shape, out_num=128, activation='relu'):
     input_img = Input(shape=input_shape)
 
     x = Convolution2D(32, 3, 3, border_mode='valid', name='conv1')(input_img)
-    x = BatchNormalization()(x)
+    if batch_norm:
+        x = BatchNormalization()(x)
     x = Activation(activation, name='act_conv1')(x)
     x = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), name='pool1')(x)
 
-    x = fire_module(x, fire_id=2, squeeze=16, expand=64)
-    x = fire_module(x, fire_id=3, squeeze=16, expand=64)
+    x = fire_module(x, fire_id=2, squeeze=16, expand=64, batch_norm=batch_norm)
+    # x = fire_module(x, fire_id=3, squeeze=16, expand=64, batch_norm=batch_norm)
 
     ###############################################################
     # Non spatial features
     x_nonspat = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), name='pool3')(x)
 
-    x_nonspat = fire_module(x_nonspat, fire_id=4, squeeze=32, expand=128)
-    x_nonspat = fire_module(x_nonspat, fire_id=5, squeeze=32, expand=128)
+    x_nonspat = fire_module(x_nonspat, fire_id=4, squeeze=32, expand=128, batch_norm=batch_norm)
+    # x_nonspat = fire_module(x_nonspat, fire_id=5, squeeze=32, expand=128, batch_norm=batch_norm)
     x_nonspat = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), name='pool5')(x_nonspat)
 
     x_nonspat = Convolution2D(out_num, 1, 1, border_mode='valid', name='conv6')(x_nonspat)
     x_nonspat = Activation(activation, name='act_conv6')(x_nonspat)
     x_nonspat = GlobalAveragePooling2D()(x_nonspat)
     x_nonspat = Dense(128)(x_nonspat)
-    x_nonspat = BatchNormalization(mode=1)(x_nonspat)
+    if fc_layer_norm:
+        x_nonspat = BatchNormalization(mode=1)(x_nonspat)
 
     ###############################################################
     # Spatial features

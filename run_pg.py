@@ -16,13 +16,6 @@ import e2eap_training.env_blocks.blocks_action_wrap as baw
 import e2eap_training.env_blocks.blocks_reward_wrap as brw
 import e2eap_training.core.env_postproc_wrapper as normwrap
 
-ENV_OPTIONS = [
-    ("env_norm", bool, True, "Should we normalize the environment"),
-    ("vis_force", bool, False, "Should we visualize forces in blocks env"),
-    ("classif_snapshot", str, "weights/keras_classifier.h5", "Which snapshot to use for blocks classifier"),
-    ("timestep_limit", int, 0, "maximum length of trajectories")
-]
-
 def wrap_env(env, logdir_root, cfg):
     """
     Set of wrappers for env normalization and added functionality
@@ -72,7 +65,7 @@ if __name__ == "__main__":
     # MAKING ENVIRONMENT
     env = make(args.env)
 
-    update_argument_parser(parser, ENV_OPTIONS)
+    update_argument_parser(parser, core.ENV_OPTIONS)
     args, __ = parser.parse_known_args()
     cfg = args.__dict__
     print 'Env updated Config = ', cfg
@@ -115,7 +108,7 @@ if __name__ == "__main__":
 
     # Initializing an agent
     # Here he just gets params dictionary from command line. I think it is just less convenient. I prefer yaml files
-    # cfg = args.__dict__
+    cfg = args.__dict__
     np.random.seed(args.seed)
     agent = agent_constructor(env.observation_space, env.action_space, cfg)
 

@@ -19,6 +19,7 @@ from modular_rl.trpo import TrpoUpdater
 from modular_rl.ppo import PpoLbfgsUpdater, PpoSgdUpdater
 from modular_rl.keras_tools import oclmnist_vis_feat
 from keras.layers import Input, merge
+from keras.models import Model
 
 MLP_OPTIONS = [
     ("hid_sizes", comma_sep_ints, [64,64], "Sizes of hidden layers of MLP"),
@@ -123,14 +124,19 @@ def make_cnns(ob_space, ac_space, cfg):
 
 def make_cnns_oclmnist(ob_space, ac_space, cfg):
     print 'AGENTZOO: Creating OCLMNIST CNNs ...'
+    print 'AGENTZOO: Config gor agent = ', cfg
     assert isinstance(ob_space, Box)
     # hid_sizes = cfg["hid_sizes"]
 
     ####################################################################################
     ## SHARED
     # Creating model for shared visual features
+    fc_layer_norm = True
     vis_feat_model = oclmnist_vis_feat(input_shape=ob_space.shape,
-                                                   out_num=128)
+                                       out_num=128,
+                                       activation = cfg["activation"],
+                                       batch_norm=False,
+                                       fc_layer_norm=fc_layer_norm)
     if isinstance(ac_space, Box):
         print '!!!!!!!!!! Continuous control initialized'
         outdim = ac_space.shape[0]
@@ -143,19 +149,24 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     ## AGENT NET
     print "AGENTZOO: Building actor network ..."
     input_img = Input(shape=ob_space.shape)
-    x_vis = vis_feat_model(input_img, activation=cfg["activation"])
+    x_vis = vis_feat_model(input_img)
 
     x_act = Dense(128, activation=cfg["activation"])(x_vis)
-    x_act = BatchNormalization(mode=1)(x_act)
+    if fc_layer_norm:
+        x_act = BatchNormalization(mode=1)(x_act)
     x_act = Activation(cfg["activation"])(x_act)
 
     x_act = Dense(128, activation=cfg["activation"])(x_act)
-    x_act = BatchNormalization(mode=1)(x_act)
-    x_act = Activation(cfg["activation"])(x_act)
+    if fc_layer_norm:
+        x_act = BatchNormalization(mode=1)(x_act)
+    act_out = Activation(cfg["activation"])(x_act)
 
-    x_act = Dense(outdim, activation=cfg["activation"])(x_act)
-    act_out = Activation("tanh")(x_act)
-    net = Model(input=input_img, output=[act_out])
+    # x_act = Dense(outdim, activation=cfg["activation"])(x_act)
+    # act_out = Activation("tanh")(x_act)
+    x_act_model = Model(input=input_img, output=[act_out])
+
+    net = Sequential()
+    net.add(x_act_model)
 
     # Creating the output layer
     if isinstance(ac_space, Box):
@@ -174,10 +185,11 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     ## VF NET
     print "AGENTZOO: Building value networks ..."
     vfnet_input_img = Input(shape=ob_space.shape)
-    x_vf_vis = vis_feat_model(vfnet_input_img, activation=cfg["activation"])
+    x_vf_vis = vis_feat_model(vfnet_input_img)
 
     x_vf = Dense(128, activation=cfg["activation"])(x_vf_vis)
-    x_vf = BatchNormalization(mode=1)(x_vf)
+    if fc_layer_norm:
+        x_vf = BatchNormalization(mode=1)(x_vf)
     x_vf = Activation(cfg["activation"])(x_vf)
 
     vf_out = Dense(1, activation=cfg["activation"])(x_vf)
@@ -250,7 +262,7 @@ class DeterministicAgent(AgentWithPolicy):
         self.set_stochastic(False)
 
 class TrpoAgent(AgentWithPolicy):
-    options = MLP_OPTIONS + PG_OPTIONS + TrpoUpdater.options + FILTER_OPTIONS
+    options = MLP_OPTIONS + PG_OPTIONS + TrpoUpdater.options + FILTER_OPTIONS + ENV_OPTIONS
     def __init__(self, ob_space, ac_space, usercfg):
         cfg = update_default_config(self.options, usercfg)
         # policy, self.baseline = make_mlps(ob_space, ac_space, cfg)
