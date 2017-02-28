@@ -17,6 +17,7 @@ from keras.utils import np_utils
 
 from modular_rl.trpo import TrpoUpdater
 from modular_rl.ppo import PpoLbfgsUpdater, PpoSgdUpdater
+from modular_rl.keras_tools import oclmnist_vis_feat
 
 MLP_OPTIONS = [
     ("hid_sizes", comma_sep_ints, [64,64], "Sizes of hidden layers of MLP"),
@@ -127,7 +128,7 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     ####################################################################################
     ## SHARED
     # Creating model for shared visual features
-    vis_feat_model = keras_tools.oclmnist_vis_feat(input_shape=ob_space.shape,
+    vis_feat_model = oclmnist_vis_feat(input_shape=ob_space.shape,
                                                    out_num=128)
     if isinstance(ac_space, Box):
         print '!!!!!!!!!! Continuous control initialized'

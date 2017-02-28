@@ -10,11 +10,17 @@ import shutil, os, logging
 import gym
 from gym import wrappers
 import env_postproc_wrapper as env_proc
+import gym_blocks
+
+import e2eap_training.env_blocks.blocks_action_wrap as baw
+import e2eap_training.env_blocks.blocks_reward_wrap as brw
+import e2eap_training.core.env_postproc_wrapper as normwrap
 
 ENV_OPTIONS = [
     ("env_norm", bool, True, "Should we normalize the environment"),
-    ("vis_force", bool, False),
-    ("classif_snapshot", str, "weights/keras_classifier.h5")
+    ("vis_force", bool, False, "Should we visualize forces in blocks env"),
+    ("classif_snapshot", str, "weights/keras_classifier.h5", "Which snapshot to use for blocks classifier"),
+    ("timestep_limit", int, 0, "maximum length of trajectories")
 ]
 
 def wrap_env(env, logdir_root, cfg):
@@ -40,8 +46,8 @@ def wrap_env(env, logdir_root, cfg):
             print_warn('Force visualization wrapper turned on')
             env = gym_blocks.wrappers.Visualization(env)
 
-        env = brw.nnetReward(env, nnet_params=cfg,
-                             log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
+        # env = brw.nnetReward(env, nnet_params=cfg,
+        #                      log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
 
         env.unwrapped.step_limit = cfg['timestep_limit']
         env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
@@ -64,10 +70,12 @@ if __name__ == "__main__":
 
     ###############################################################################
     # MAKING ENVIRONMENT
-    env_src = make(args.env)
+    env = make(args.env)
 
-    parser = update_argument_parser(parser, ENV_OPTIONS)
+    update_argument_parser(parser, ENV_OPTIONS)
+    args, __ = parser.parse_known_args()
     cfg = args.__dict__
+    print 'Env updated Config = ', cfg
     env = wrap_env(env, cfg=cfg, logdir_root=mondir)
 
     # Bugfix: render should be called before agents
