@@ -176,13 +176,16 @@ def animate_rollout(env, agent, n_timesteps, delay=.01):
     env.render()
     done = False
     i = 0
+    rew_sum = 0.0
     while not done:
         i += 1
         a, _info = agent.act(ob)
         (ob, _rew, done, _info) = env.step(a)
+        rew_sum += _rew
         env.render()
         if done:
             print("terminated after %s timesteps" % i)
+            print("Rew avg = %f" % rew_sum / float(i))
             break
         time.sleep(delay)
 

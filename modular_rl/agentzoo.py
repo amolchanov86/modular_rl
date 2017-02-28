@@ -130,6 +130,7 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     vis_feat_model = keras_tools.oclmnist_vis_feat(input_shape=ob_space.shape,
                                                    out_num=128)
     if isinstance(ac_space, Box):
+        print '!!!!!!!!!! Continuous control initialized'
         outdim = ac_space.shape[0]
         probtype = DiagGauss(outdim)
     elif isinstance(ac_space, Discrete):

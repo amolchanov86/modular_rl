@@ -13,7 +13,7 @@ import env_postproc_wrapper as env_proc
 
 ENV_OPTIONS = [
     ("env_norm", bool, True, "Should we normalize the environment"),
-    ("vis_force", bool, True),
+    ("vis_force", bool, False),
     ("classif_snapshot", str, "weights/keras_classifier.h5")
 ]
 
@@ -44,6 +44,7 @@ def wrap_env(env, logdir_root, cfg):
                              log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
 
         env.unwrapped.step_limit = cfg['timestep_limit']
+        env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
     return env
 
 if __name__ == "__main__":
