@@ -157,14 +157,22 @@ if __name__ == "__main__":
             if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)):
                 hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
 
-        # Animating rollouts
+        ######################################
+        ## Animating rollouts
         if args.plot:
             print "Animating rollout ..."
             animate_rollout(env, agent, min(500, args.timestep_limit))
 
-        # Plotting progress and saving figures
+        ######################################
+        ## Plotting progress and saving figures
+        samples_num = 0
+        samp_i = []
+        for val in diagnostics['EpSampNum']:
+            samples_num += val
+            samp_i.append(samples_num)
+
         for name in fig_handler.graph_names:
-            fig_handler.plot(name, stats[name])
+            fig_handler.plot(name, indx=samp_i, data=diagnostics[name])
 
         fig_handler.save()
 
