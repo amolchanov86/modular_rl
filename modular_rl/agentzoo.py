@@ -267,7 +267,8 @@ class TrpoAgent(AgentWithPolicy):
     def __init__(self, ob_space, ac_space, usercfg):
         cfg = update_default_config(self.options, usercfg)
         # policy, self.baseline = make_mlps(ob_space, ac_space, cfg)
-        policy, self.baseline = make_cnns_oclmnist(ob_space, ac_space, cfg)
+        # policy, self.baseline = make_cnns_oclmnist(ob_space, ac_space, cfg)
+        policy, self.baseline = make_cnns(ob_space, ac_space, cfg)
         obfilter, rewfilter = make_filters(cfg, ob_space)
         self.updater = TrpoUpdater(policy, cfg)
         AgentWithPolicy.__init__(self, policy, obfilter, rewfilter)

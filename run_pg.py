@@ -4,6 +4,7 @@ This script runs a policy gradient algorithm
 """
 from gym.envs import make
 from modular_rl import *
+from modular_rl import plot_results as pltres
 import argparse, sys, cPickle
 from tabulate import tabulate
 import shutil, os, logging
@@ -56,9 +57,17 @@ if __name__ == "__main__":
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
 
     # Making name and folder structure for the output file
-    fname = args.outfile[:-3] if args.outfile[-3:] == '.h5' else args.outfile
-    mondir = fname + ".dir"
-    if os.path.exists(mondir): shutil.rmtree(mondir)
+    out_dir = args.outdir
+    if os.path.exists(out_dir):
+        if osp.exists(out_dir):
+            raw_input("WARNING: %s already exists. Press ENTER to DELETE existing and continue. (exit with Ctrl+C)" % out_dir)
+        shutil.rmtree(out_dir)
+    os.mkdir(out_dir)
+
+    if out_dir[-1] != '/':
+        out_dir += '/'
+    mondir = out_dir + 'gym_log/'
+    if os.path.exists(mondir): shutil.rmtree(mondir, out_dir=out_dir)
     os.mkdir(mondir)
 
 
@@ -70,7 +79,7 @@ if __name__ == "__main__":
     args, __ = parser.parse_known_args()
     cfg = args.__dict__
     print 'Env updated Config = ', cfg
-    env = wrap_env(env, cfg=cfg, logdir_root=mondir)
+    env = wrap_env(env, cfg=cfg, logdir_root=out_dir)
 
     # Bugfix: render should be called before agents
     env.reset()
@@ -123,6 +132,10 @@ if __name__ == "__main__":
     gym.logger.setLevel(logging.WARN)
 
     ###############################################################################
+    # Plotting handling
+    fig_handler = pltres.plot_graphs(graph_names=['EpRewMean'], out_dir=out_dir)
+
+    ###############################################################################
     # CREATING ITERATION END HANDLER:
     # - saves diagnostics
     # - saves snapshots
@@ -143,10 +156,17 @@ if __name__ == "__main__":
                     diagnostics[stat].extend(val)
             if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)):
                 hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
-        # Plot
+
+        # Animating rollouts
         if args.plot:
             print "Animating rollout ..."
             animate_rollout(env, agent, min(500, args.timestep_limit))
+
+        # Plotting progress and saving figures
+        for name in fig_handler.graph_names:
+            fig_handler.plot(name, stats[name])
+
+        fig_handler.save()
 
     ###############################################################################
     # RUNNING TRAINING

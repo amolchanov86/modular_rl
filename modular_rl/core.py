@@ -140,7 +140,7 @@ def rollout(env, agent, timestep_limit):
         for (k,v) in agentinfo.iteritems():
             data[k].append(v)
         ob,rew,done,envinfo = env.step(action)
-        env.render()
+        #env.render()
         # print 'ob_avg = ', np.mean(ob)
         # print 'action = ', action
         data["reward"].append(rew)

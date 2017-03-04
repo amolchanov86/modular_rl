@@ -96,7 +96,7 @@ def IDENTITY(x):
 GENERAL_OPTIONS = [
     ("seed",int,0,"random seed"),
     ("metadata",str,"","metadata about experiment"),
-    ("outfile",str,"/tmp/a.h5","output file"),
+    ("outdir",str,"/tmp/trpo_results","output directory"),
     ("use_hdf",int,0,"whether to make an hdf5 file with results and snapshots"),
     ("snapshot_every",int,0,"how often to snapshot"),
     ("load_snapshot",str,"","path to snapshot"),
@@ -108,12 +108,13 @@ GENERAL_OPTIONS = [
 # ================================================================
 
 
-def prepare_h5_file(args):
+def prepare_h5_file(args, out_dir):
     # Making names and opening h5 file
-    outfile_default = "/tmp/a.h5"
-    fname = args.outfile or outfile_default
-    fname = fname if fname[-3:] == '.h5' else (fname + '.h5')
-    if osp.exists(fname) and fname != outfile_default:
+    if out_dir[-1] != '/':
+        out_dir += '/'
+    fname = out_dir + 'diagnostic.h5'
+
+    if osp.exists(fname):
         raw_input("output file %s already exists. press enter to continue. (exit with ctrl-C)"%fname)
     import h5py
     hdf = h5py.File(fname,"w")

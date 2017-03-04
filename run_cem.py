@@ -19,7 +19,7 @@ if __name__ == "__main__":
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
     env = make(args.env)
     env_spec = env.spec
-    mondir = args.outfile + ".dir"
+    mondir = args.outdir + "/gym_log"
     if os.path.exists(mondir): shutil.rmtree(mondir)
     os.mkdir(mondir)
     env.monitor.start(mondir,video_callable=None if args.video else VIDEO_NEVER)
