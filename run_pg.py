@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # Preparing dictionary for diagnostics
     # Preparing hdf5 handler for saving diagnostics upon exit
     if args.use_hdf:
-        hdf, diagnostics = prepare_h5_file(args)
+        hdf, diagnostics = prepare_h5_file(args, out_dir=out_dir)
     gym.logger.setLevel(logging.WARN)
 
     ###############################################################################

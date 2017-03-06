@@ -3,7 +3,7 @@ outdir=results_temp/blocks_current
 
 python ./run_pg.py --env Blocks-v0\
  --agent modular_rl.agentzoo.TrpoAgent\
- --outdir ${outdir}.h5\
+ --outdir ${outdir}\
  --n_iter 10000\
  --snapshot_every 10\
  --video_record_every 10\
