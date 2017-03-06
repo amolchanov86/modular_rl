@@ -1,11 +1,17 @@
 ---
 mujoco_model: "blocks"
 dataset: "reduced_mnist_png"
-num_simple_blocks: "0"
+height: 126
+width: 126
+num_simple_blocks: 0
 mnist_digits: "-1"
-reload_after: "10"
+reload_after: 1000000
 mnist_visibility: "back"
-randomize_position_for_each_reset: True
+randomize_position_for_each_reset: False
+smooth_render: True
+force_visual_scale_factor: 0.001
+frame_skip: 50
+force_duration: 10
 compiler:
   inertiafromgeom: "true"
   angle: "radian"

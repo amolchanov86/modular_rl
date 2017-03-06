@@ -131,7 +131,7 @@ def make_cnns_oclmnist(ob_space, ac_space, cfg):
     ####################################################################################
     ## SHARED
     # Creating model for shared visual features
-    fc_layer_norm = True
+    fc_layer_norm = False
     vis_feat_model = oclmnist_vis_feat(input_shape=ob_space.shape,
                                        out_num=128,
                                        activation = cfg["activation"],
