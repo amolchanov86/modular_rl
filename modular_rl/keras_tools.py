@@ -111,7 +111,8 @@ def mean_coord(x, verbose=True):
     w_mean = K.sum(cnt_w_weighted, axis=2)
 
     # Packing everything together into a single Tensor
-    hw_mean = Merge(mode='concat', axis=2)([h_mean, w_mean])
+    # hw_mean = Merge(mode='concat', axis=2)([h_mean, w_mean])
+    hw_mean = merge([h_mean, w_mean], axis=2)
 
     if dim_ordering == 'tf':
         if verbose: print('TF ORDERING IS USED')
@@ -182,7 +183,7 @@ def oclmnist_vis_feat(input_shape, out_num=128, activation='relu', batch_norm=Fa
     # x_nonspat = fire_module(x_nonspat, fire_id=5, squeeze=32, expand=128, batch_norm=batch_norm)
     x_nonspat = MaxPooling2D(pool_size=(3, 3), strides=(2, 2), name='pool5')(x_nonspat)
 
-    x_nonspat = Convolution2D(out_num, 1, 1, border_mode='valid', name='conv6')(x_nonspat)
+    x_nonspat = Convolution2D(128, 1, 1, border_mode='valid', name='conv6')(x_nonspat)
     x_nonspat = Activation(activation, name='act_conv6')(x_nonspat)
     x_nonspat = GlobalAveragePooling2D()(x_nonspat)
     x_nonspat = Dense(128)(x_nonspat)

@@ -74,6 +74,13 @@ def update_default_config(tuples, usercfg):
     return out
 
 def update_argument_parser(parser, options, **kwargs):
+    """
+    The function updates the argument parser, by adding new options
+    :param parser: Argument parser
+    :param options: (list of tuples: name,type,default val, description) options to parse
+    :param kwargs:
+    :return:
+    """
     kwargs = kwargs.copy()
     for (name,typ,default,desc) in options:
         flag = "--"+name

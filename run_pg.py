@@ -56,6 +56,7 @@ if __name__ == "__main__":
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
 
     # Making name and folder structure for the output file
+    # Removing out_dir if it already exists
     out_dir = args.outdir
     if os.path.exists(out_dir):
         if osp.exists(out_dir):
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         shutil.rmtree(out_dir)
     os.mkdir(out_dir)
 
+    # Forming monitor log directory for the gym environment
     if out_dir[-1] != '/':
         out_dir += '/'
     mondir = out_dir + 'gym_log/'
@@ -74,10 +76,15 @@ if __name__ == "__main__":
     # MAKING ENVIRONMENT
     env = make(args.env)
 
+    # Add new ENV arguments to the parser
     update_argument_parser(parser, core.ENV_OPTIONS)
+    # After added re-parsing to read argument values
     args, __ = parser.parse_known_args()
+    # Convert parsed arguments into a dictionary
     cfg = args.__dict__
     print 'Env updated Config = ', cfg
+    # Wrapping ENV to enhance functionality:
+    # For example: normalize env, add visualization, restrict action space, etc ...
     env = wrap_env(env, cfg=cfg, logdir_root=out_dir)
 
     # Bugfix: render should be called before agents
@@ -100,7 +107,7 @@ if __name__ == "__main__":
 
     ###############################################################################
     # INITIALIZATION OF THE AGENT
-    # The function gets agents name from args and converts this name into function (interesting and a smart move)
+    # The function gets agents name from args and converts this name into constructor function (interesting and a smart move)
     # Ex: modular_rl.agentzoo.TrpoAgent  will get TrpoAgent constructor from modular_rl.agentzoo module
     # PS: previously he used ctor = constructor
     agent_constructor = get_agent_cls(args.agent)
