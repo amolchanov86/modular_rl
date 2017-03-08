@@ -40,7 +40,7 @@ def wrap_env(env, logdir_root, cfg):
                                  normalize=cfg['env_norm'])
 
     if env.spec.id[:6] == 'Blocks':
-        env = brw.nnetReward(env, nnet_params=cfg,
+        env = brw.nnetReward(env, params=cfg,
                              log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
 
         env.unwrapped.step_limit = cfg['timestep_limit']
