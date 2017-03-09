@@ -133,6 +133,7 @@ def rollout(env, agent, timestep_limit):
     terminated = False
 
     data = defaultdict(list)
+    print 'EP START ---------------------------------------------------'
     for _ in xrange(timestep_limit):
         ob = agent.obfilt(ob)
         data["observation"].append(ob)
@@ -154,7 +155,7 @@ def rollout(env, agent, timestep_limit):
     data = {k:np.array(v) for (k,v) in data.iteritems()}
     data["terminated"] = terminated
 
-    print 'rollout: rew_mean = ', np.mean(data["reward"])
+    print 'core.rollout: REW MEAN = ', np.mean(data["reward"])
     return data
 
 def do_rollouts_serial(env, agent, timestep_limit, n_timesteps, seed_iter):

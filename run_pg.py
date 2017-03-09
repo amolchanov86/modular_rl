@@ -42,9 +42,12 @@ def wrap_env(env, logdir_root, cfg):
     if env.spec.id[:6] == 'Blocks':
         ## !!!!!!!!!!! Temporary to test reward periods
         cfg['reward_interval'] = {}
-        cfg['reward_interval']['dist']  = [0, 10000]
-        cfg['reward_interval']['px']    = [10000, 20000]
-        cfg['reward_interval']['mnist'] = [20000, None]
+        cfg['reward_interval']['dist']  = [0, 20000]
+        cfg['reward_interval']['px']    = [20000, 30000]
+        cfg['reward_interval']['mnist'] = [30000, None]
+        # cfg['reward_interval']['dist']  = [0, 30]
+        # cfg['reward_interval']['px']    = [30, 60]
+        # cfg['reward_interval']['mnist'] = [60, None]
 
         env = brw.nnetReward(env, params=cfg,
                              log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
