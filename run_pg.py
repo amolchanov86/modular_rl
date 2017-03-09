@@ -40,11 +40,18 @@ def wrap_env(env, logdir_root, cfg):
                                  normalize=cfg['env_norm'])
 
     if env.spec.id[:6] == 'Blocks':
+        ## !!!!!!!!!!! Temporary to test reward periods
+        cfg['reward_interval'] = {}
+        cfg['reward_interval']['dist']  = [0, 10000]
+        cfg['reward_interval']['px']    = [10000, 20000]
+        cfg['reward_interval']['mnist'] = [20000, None]
+
         env = brw.nnetReward(env, params=cfg,
                              log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
 
-        env.unwrapped.step_limit = cfg['timestep_limit']
         env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
+        # All additional parameters should be specified AFTER reloading (everytime you reload re-spicify them)
+        env.unwrapped.step_limit = cfg['timestep_limit']
     return env
 
 if __name__ == "__main__":

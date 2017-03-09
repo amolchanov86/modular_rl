@@ -6,13 +6,16 @@ width: 126
 num_simple_blocks: 0
 mnist_digits: "8"
 reload_after: 1000000
-mnist_visibility: "back"
 smooth_render: True
 frame_skip: 50
 force_duration: 10
 
 randomize_position_every_reset: True
 randomize_position_after: 1              # How many resets to wait before randomizing the position of the blocks. This wont be considered if randomize_position_every_reset="true"
+randomizer:
+#  pose: "0 0 0"       #A flattened list of euler angles from which to choose a random orientation for blocks. If not provided random pose is assigned. (Caution: if two blocks are initialized at the same location could alter the pose of individual blocks).
+  mnist_visibility: "back"        # A list of sides on a block where a mnist digit could appear. ['left', 'right', 'up', 'down', 'front', 'back']
+
 
 paths:
   mnist_dir: "/tmp/blocks/MNIST_data"   # Path to uncompress the MNIST data
