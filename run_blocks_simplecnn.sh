@@ -1,5 +1,5 @@
 #!/bin/bash
-out_dir=results_temp/blocks_simplecnn__rndreset_1__rew_dist_px_force_switch
+out_dir=results_temp/blocks_simplecnn__rndreset_1__rew_dist_px_force_fall
 
 python ./run_pg.py --env Blocks-v0\
  --agent modular_rl.agentzoo.TrpoAgent\

@@ -91,9 +91,14 @@ class plot_graphs():
     def save(self):
         if self.out_dir is not None:
             for name in self.graph_names:
-                filename = self.out_dir + 'fig_' + name + '.png'
+                if isinstance(name, str):
+                    filename = self.out_dir + 'fig__' + name + '.png'
+                else:
+                    filename = self.out_dir + 'fig__' + "_".join(name) + '.png'
+                    name = name[0]
                 print 'Saving figure:', filename
                 self.figures[name].savefig(filename)
+
 
 ## Tests functionality
 def main(argv):

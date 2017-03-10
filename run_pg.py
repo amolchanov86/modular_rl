@@ -18,7 +18,7 @@ import e2eap_training.env_blocks.blocks_action_wrap as baw
 import e2eap_training.env_blocks.blocks_reward_wrap as brw
 import e2eap_training.core.env_postproc_wrapper as normwrap
 
-def wrap_env(env, logdir_root, cfg):
+def wrap_env(env, logdir_root, cfg, params):
     """
     Set of wrappers for env normalization and added functionality
     :param env:
@@ -42,13 +42,10 @@ def wrap_env(env, logdir_root, cfg):
 
     if env.spec.id[:6] == 'Blocks':
         ## !!!!!!!!!!! Temporary to test reward periods
-        cfg['reward_interval'] = {}
-        cfg['reward_interval']['dist']  = [0, 20000]
-        cfg['reward_interval']['px']    = [20000, 40000]
-        cfg['reward_interval']['mnist'] = [40000, None]
-        # cfg['reward_interval']['dist']  = [0, 30]
-        # cfg['reward_interval']['px']    = [30, 60]
-        # cfg['reward_interval']['mnist'] = [60, None]
+        cfg['reward_interval'] = params['reward_interval']
+        # cfg['reward_interval']['dist']  = [0, 20000]
+        # cfg['reward_interval']['px']    = [20000, 40000]
+        # cfg['reward_interval']['mnist'] = [40000, None]
 
         env = brw.nnetReward(env, params=cfg,
                              log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
@@ -65,6 +62,10 @@ if __name__ == "__main__":
     parser.add_argument("--agent",required=True)
     parser.add_argument("--plot",action="store_true")
     args,_ = parser.parse_known_args([arg for arg in sys.argv[1:] if arg not in ('-h', '--help')])
+
+    # Loading parameters not specified in the arguments
+    yaml_stream = file(args.params_file, 'r')
+    params = yaml.load(yaml_stream)
 
     # Making name and folder structure for the output file
     # Removing out_dir if it already exists
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     print 'Env updated Config = ', cfg
     # Wrapping ENV to enhance functionality:
     # For example: normalize env, add visualization, restrict action space, etc ...
-    env = wrap_env(env, cfg=cfg, logdir_root=out_dir)
+    env = wrap_env(env, cfg=cfg, logdir_root=out_dir, params=params)
 
     # Bugfix: render should be called before agents
     env.reset()
@@ -150,8 +151,6 @@ if __name__ == "__main__":
 
     ###############################################################################
     # Plotting handling
-    yaml_stream = file(cfg['params_file'], 'r')
-    params = yaml.load(yaml_stream)
     fig_handler = pltres.plot_graphs(graph_names=params['plot_names'], out_dir=out_dir)
 
     ###############################################################################
