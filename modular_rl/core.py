@@ -34,7 +34,14 @@ def add_episode_stats(stats, paths):
     reward_key = "reward_raw" if "reward_raw" in paths[0] else "reward"
     episoderewards = np.array([path[reward_key].sum() for path in paths])
     pathlengths = np.array([pathlength(path) for path in paths])
- 
+
+    # Reward components including shaping rewards if present
+    # Introduced for Blocks Env
+    for key in paths[0].keys():
+        if key.startswith('rew_'):
+            rew_aux_cur = np.array([path[reward_key].sum() for path in paths])
+            stats[key] = rew_aux_cur.sum()
+
     stats["EpisodeRewards"] = episoderewards
     stats["EpisodeLengths"] = pathlengths
     stats["NumEpBatch"] = len(episoderewards)
@@ -45,6 +52,7 @@ def add_episode_stats(stats, paths):
     stats["EpLenMax"] = pathlengths.max()
     stats["RewPerStep"] = episoderewards.sum()/pathlengths.sum()
     stats["EpSampNum"] = pathlengths.sum()
+
 
 def add_prefixed_stats(stats, prefix, d):
     for (k,v) in d.iteritems():

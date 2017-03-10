@@ -1,0 +1,133 @@
+---
+mujoco_model: "blocks"
+dataset: "reduced_mnist_png"
+height: 126
+width: 126
+num_simple_blocks: 0
+mnist_digits: "8"
+reload_after: 1000000
+mnist_visibility: "back"
+smooth_render: True
+frame_skip: 50
+force_duration: 10
+
+randomize_position_every_reset: True
+randomize_position_after: 1              # How many resets to wait before randomizing the position of the blocks. This wont be considered if randomize_position_every_reset="true"
+
+paths:
+  mnist_dir: "/tmp/blocks/MNIST_data"   # Path to uncompress the MNIST data
+  model_dir: "/tmp/blocks/temp_models"  # Path to write the temporary model xml files
+
+force:
+  max_fx: 1000                         # Maximum magnitude for x component
+  max_fy: 1000                         # Maximum magnitude for y component
+  max_fz: 1000                         # Maximum magnitude for z component
+  duration: 10                         # For how many time steps the force is applied
+  visual_arrow_scale_factor: 0.0015    # scaling factor for force visualization
+  visual_arrow_size: 0.008
+
+torque:
+  max_tx: 0
+  max_ty: 0
+  max_tz: 0
+
+compiler:
+  inertiafromgeom: "true"
+  angle: "radian"
+  texturedir: "texture/"
+size:
+  nuser_geom: "1"
+  nuser_jnt: "1"
+option:
+  timestep: "0.002"
+  gravity: "0 0 -9.8"
+  viscosity: "0"
+  iterations: "20"
+light:
+  directional: "true"
+  castshadow: "false"
+  cutoff: "40"
+  exponent: "10"
+  diffuse: ".4 .4 .4"
+  specular: ".7 .7 .7"
+  pos: "0 0 .9"
+  dir: "0 0 -1"
+table:
+  name: 'tableTop'
+  material: "MatGnd"
+  type: "plane"
+  pos: "0 0 0"
+  size: "0.6 0.6 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+wall_1:
+  name: 'table_wall_1'
+  type: "plane"
+  material: "MatGnd"
+  zaxis: "-1 0 0"
+  pos: "0.6 0.0 0.6"
+  size: "1.2 .6 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+wall_2:
+  name: 'table_wall_2'
+  type: "plane"
+  material: "MatGnd"
+  zaxis: "1 0 0"
+  pos: "-0.6 0.0 0.6"
+  size: "1.2 .6 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+wall_3:
+  name: 'table_wall_3'
+  type: "plane"
+  material: "MatGnd"
+  zaxis: "0 -1 0"
+  pos: "0.0 0.6 0.6"
+  size: "0.6 1.2 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+wall_4:
+  name: 'table_wall_4'
+  type: "plane"
+  material: "MatGnd"
+  zaxis: "0 1 0"
+  pos: "0.0 -0.6 0.6"
+  size: "0.6 1.2 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+wall_5:
+  name: 'table_wall_5'
+  type: "plane"
+  pos: "0.0 0.0 1.8"
+  zaxis: "0 0 -1"
+  size: "0.6 0.6 0.01"
+  rgba: ".6 .6 .5 1"
+  contype: "1"
+  conaffinity: "1"
+table_material:
+  name: "MatGnd"
+  specular: ".3"
+  shininess: ".2"
+  reflectance: "0.0"
+  rgba: ".5 .55 .5 1"
+box_params:
+  type: box
+  name: cBox
+  size: 0.08 0.08 0.08
+  rgba: 1 0 0 1
+  user: "1"
+  conaffinity: "1"
+  contype: "1"
+box_joint_params:
+  name: "cBox_joint"
+  type: "free"
+  armature: "0"
+  damping: "0"
+  limited: "false"
+  user: "010"

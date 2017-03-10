@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from scipy import io as sio
 import h5py
+import yaml
 
 
 class plot_graphs():
@@ -20,15 +21,31 @@ class plot_graphs():
         self.colors = {}
         fig_free = fig_start - 1
         self.graph_names = []
-        gr_indx = -1;
+        gr_indx = -1
         for name in graph_names:
-            gr_indx += 1;
             self.graph_names.append(name)
-            fig_free += 1
-            self.figures[name] = plt.figure(fig_free, figsize=fig_size)
-            self.axis[name] = self.figures[name].add_subplot(111)
-            self.axis[name].set_title(name, fontsize=18)
-            self.colors[name] = self.colors_all[gr_indx % len(self.colors_all)]
+            if isinstance(name, str):
+                gr_indx += 1
+                fig_free += 1
+                self.figures[name] = plt.figure(fig_free, figsize=fig_size)
+                self.axis[name] = self.figures[name].add_subplot(111)
+                self.axis[name].set_title(name, fontsize=18)
+                self.colors[name] = self.colors_all[gr_indx % len(self.colors_all)]
+            elif isinstance(name, list):
+                fig_free += 1
+                fig_cur = plt.figure(fig_free, figsize=fig_size)
+                axis_cur = fig_cur.add_subplot(111)
+                # axis_cur.set_title(name, fontsize=18)
+                name_count = 0
+                for name_i in name:
+                    name_count += 1
+                    gr_indx += 1
+                    self.figures[name_i] = fig_cur
+                    self.axis[name_i] = axis_cur
+                    self.colors[name_i] = self.colors_all[name_count % len(self.colors_all)]
+            else:
+                raise ValueError("PLOT GRAPHS: string or list of strings are expected as graph name")
+
         # plt.draw()
         plt.show()
         if out_dir[-1] != '/':
@@ -36,12 +53,40 @@ class plot_graphs():
         self.out_dir = out_dir
 
     def plot(self, name, data, indx, title=None):
-        self.axis[name].plot(indx, data, self.colors[name])
+        """
+        Plot data.
+        :param name: (string or list of strings)
+        :param data: (array or list of arrays or dictionary)
+        :param indx: (array)
+        :param title: (string)
+        :return:
+        """
+        if isinstance(name, str):
+            if isinstance(data, dict):
+                self.axis[name].plot(indx, data[name], self.colors[name])
+            else:
+                self.axis[name].plot(indx, data, self.colors[name])
+        elif isinstance(name, list):
+            count = 0
+            self.axis[name[0]].clear()
+            for name_i in name:
+                if isinstance(data, dict):
+                    self.axis[name_i].plot(indx, data[name_i], self.colors[name_i], label=name_i)
+                else:
+                    self.axis[name_i].plot(indx, data[count], self.colors[name_i], label=name_i)
+                count += 1
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                       ncol=2, mode="expand", borderaxespad=0.)
+            name = name_i
+        else:
+            raise ValueError("PLOT GRAPHS: string or list of strings are expected as graph name")
+
         if title is not None:
             self.axis[name].set_title(title)
+
         plt.pause(.01)
-        # plt.draw()
         # plt.show()
+        # plt.draw()
 
     def save(self):
         if self.out_dir is not None:

@@ -1,0 +1,1 @@
+plot_names: ['EpRewMean', ['rew_dist', 'rew_px', 'rew_force', 'rew_mnist', 'rew_total']]

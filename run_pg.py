@@ -12,6 +12,7 @@ import gym
 from gym import wrappers
 import env_postproc_wrapper as env_proc
 import gym_blocks
+import yaml
 
 import e2eap_training.env_blocks.blocks_action_wrap as baw
 import e2eap_training.env_blocks.blocks_reward_wrap as brw
@@ -43,8 +44,8 @@ def wrap_env(env, logdir_root, cfg):
         ## !!!!!!!!!!! Temporary to test reward periods
         cfg['reward_interval'] = {}
         cfg['reward_interval']['dist']  = [0, 20000]
-        cfg['reward_interval']['px']    = [20000, 30000]
-        cfg['reward_interval']['mnist'] = [30000, None]
+        cfg['reward_interval']['px']    = [20000, 40000]
+        cfg['reward_interval']['mnist'] = [40000, None]
         # cfg['reward_interval']['dist']  = [0, 30]
         # cfg['reward_interval']['px']    = [30, 60]
         # cfg['reward_interval']['mnist'] = [60, None]
@@ -149,7 +150,9 @@ if __name__ == "__main__":
 
     ###############################################################################
     # Plotting handling
-    fig_handler = pltres.plot_graphs(graph_names=['EpRewMean'], out_dir=out_dir)
+    yaml_stream = file(cfg['params_file'], 'r')
+    params = yaml.load(yaml_stream)
+    fig_handler = pltres.plot_graphs(graph_names=params['plot_names'], out_dir=out_dir)
 
     ###############################################################################
     # CREATING ITERATION END HANDLER:
@@ -188,7 +191,7 @@ if __name__ == "__main__":
             samp_i.append(samples_num)
 
         for name in fig_handler.graph_names:
-            fig_handler.plot(name, indx=samp_i, data=diagnostics[name])
+            fig_handler.plot(name, indx=samp_i, data=diagnostics)
 
         fig_handler.save()
 

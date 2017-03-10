@@ -107,7 +107,8 @@ GENERAL_OPTIONS = [
     ("use_hdf",int,0,"whether to make an hdf5 file with results and snapshots"),
     ("snapshot_every",int,0,"how often to snapshot"),
     ("load_snapshot",str,"","path to snapshot"),
-    ("video_record_every",int,1,"how often to record video. 0 == never record")
+    ("video_record_every",int,1,"how often to record video. 0 == never record"),
+    ("params_file",str,"config/train_params.yaml","File with training parameters")
 ]
 
 # ================================================================
