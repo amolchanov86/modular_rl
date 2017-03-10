@@ -2,25 +2,46 @@
 """
 Load a snapshotted agent from an hdf5 file and animate it's behavior
 """
-import os
+
 import argparse
 import cPickle, h5py, numpy as np, time
 from collections import defaultdict
 import gym
-from run_pg import wrap_env
+import gym_blocks
+from gym import wrappers
 
-def printDictTypes(dict_in, indent='  '):
-    for key in dict_in.keys():
-        print indent, key, ' : ', type(dict_in[key])
-        if isinstance(dict_in[key], dict):
-            printDictTypes(dict_in[key], indent=indent + '  ')
+import e2eap_training.env_blocks.blocks_action_wrap as baw
+# import e2eap_training.env_blocks.blocks_reward_wrap as brw
+import e2eap_training.core.env_postproc_wrapper as normwrap
 
-def h5params2dict(dict_in, indent='  '):
-    params = {}
-    for key in dict_in.keys():
-        params[key] = dict_in[key].value
-        print indent, key, ' : ', type(params[key])
-    return params
+def wrap_env(env, logdir_root, cfg):
+    """
+    Set of wrappers for env normalization and added functionality
+    :param env:
+    :param logdir_root:
+    :param cfg:
+    :return:
+    """
+
+    if logdir_root[-1] != '/':
+        logdir_root += '/'
+
+    if env.spec.id[:6] == 'Blocks':
+        if cfg['vis_force']:
+            # print_warn('Force visualization wrapper turned on')
+            env = gym_blocks.wrappers.Visualization(env)
+        # This wrapper should come before normalizer
+        env = baw.action2dWrap(env, fz=0)
+
+    env = normwrap.make_norm_env(env=env,
+                                 normalize=cfg['env_norm'])
+
+    if env.spec.id[:6] == 'Blocks':
+        env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
+        # All additional parameters should be specified AFTER reloading (everytime you reload re-spicify them)
+        env.unwrapped.step_limit = cfg['timestep_limit']
+    return env
+
 
 def animate_rollout(env, agent, n_timesteps,delay=.01):
     infos = defaultdict(list)
@@ -48,7 +69,6 @@ def main():
     parser.add_argument("hdf")
     parser.add_argument("--timestep_limit",type=int)
     parser.add_argument("--snapname")
-    parser.add_argument("--outdir", default='results_temp/test_agent/')
     args = parser.parse_args()
 
     hdf = h5py.File(args.hdf,'r')
@@ -62,13 +82,21 @@ def main():
     else: 
         snapname = args.snapname
 
-    # params = hdf["params"]
-    params = h5params2dict(hdf["params"])
-    out_dir = args.outdir
-    if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+    cfg ={}
+    cfg['env_norm'] = True
+    cfg['vis_force'] = True
+    cfg['timestep_limit'] = args.timestep_limit
+
+    logdir = 'results_temp/sim_results/'
+    mondir = logdir + 'gym_log/'
     env = gym.make(hdf["env_id"].value)
-    env = wrap_env(env, cfg=params, logdir_root=out_dir)
+    VIDEO_NEVER = False
+    def video_schedule(episode_id):
+        return True
+
+    env = wrap_env(env, cfg=cfg, logdir_root='results_temp/sim_results')
+    # env = wrappers.Monitor(env, mondir, video_callable=video_schedule if args.video_record_every else VIDEO_NEVER)
+    env = wrappers.Monitor(env, mondir, video_callable=video_schedule)
 
     agent = cPickle.loads(hdf['agent_snapshots'][snapname].value)
     agent.stochastic=False
