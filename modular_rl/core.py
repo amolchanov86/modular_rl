@@ -39,8 +39,8 @@ def add_episode_stats(stats, paths):
     # Introduced for Blocks Env
     for key in paths[0].keys():
         if key.startswith('rew_'):
-            rew_aux_cur = np.array([path[reward_key].sum() for path in paths])
-            stats[key] = rew_aux_cur.sum()
+            rew_aux_cur = np.array([path[key].sum() for path in paths])
+            stats[key] = rew_aux_cur.mean()
 
     stats["EpisodeRewards"] = episoderewards
     stats["EpisodeLengths"] = pathlengths
