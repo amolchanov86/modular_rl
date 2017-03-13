@@ -52,6 +52,38 @@ class plot_graphs():
             out_dir += '/'
         self.out_dir = out_dir
 
+    # def adj_axis(self, fig, ax):
+    #     plt.draw()  # to know size of legend
+    #
+    #     padLeft = ax.get_position().x0 * fig.get_size_inches()[0]
+    #     padBottom = ax.get_position().y0 * fig.get_size_inches()[1]
+    #     padTop = (1 - ax.get_position().y0 - ax.get_position().height) * fig.get_size_inches()[1]
+    #     padRight = (1 - ax.get_position().x0 - ax.get_position().width) * fig.get_size_inches()[0]
+    #     dpi = fig.get_dpi()
+    #     padLegend = ax.get_legend().get_frame().get_width() / dpi
+    #
+    #     widthAx = 3  # inches
+    #     heightAx = 3  # inches
+    #     widthTot = widthAx + padLeft + padRight + padLegend
+    #     heightTot = heightAx + padTop + padBottom
+    #
+    #     # resize ipython window (optional)
+    #     posScreenX = 1366 / 2 - 10  # pixel
+    #     posScreenY = 0  # pixel
+    #     canvasPadding = 6  # pixel
+    #     canvasBottom = 40  # pixel
+    #     ipythonWindowSize = '{0}x{1}+{2}+{3}'.format(int(round(widthTot * dpi)) + 2 * canvasPadding
+    #                                                  , int(round(heightTot * dpi)) + 2 * canvasPadding + canvasBottom
+    #                                                  , posScreenX, posScreenY)
+    #     fig.canvas._tkcanvas.master.geometry(ipythonWindowSize)
+    #     plt.draw()  # to resize ipython window. Has to be done BEFORE figure resizing!
+    #
+    #     # set figure size and ax position
+    #     fig.set_size_inches(widthTot, heightTot)
+    #     ax.set_position([padLeft / widthTot, padBottom / heightTot, widthAx / widthTot, heightAx / heightTot])
+    #     plt.draw()
+    #     plt.show()
+
     def plot(self, name, data, indx, title=None):
         """
         Plot data.
@@ -62,28 +94,46 @@ class plot_graphs():
         :return:
         """
         if isinstance(name, str):
+            name = [name]
+
+        count = 0
+        self.axis[name[0]].clear()
+
+        for name_i in name:
             if isinstance(data, dict):
-                self.axis[name].plot(indx, data[name], self.colors[name])
+                data_plot = data[name_i]
             else:
-                self.axis[name].plot(indx, data, self.colors[name])
-        elif isinstance(name, list):
-            count = 0
-            self.axis[name[0]].clear()
-            for name_i in name:
-                if isinstance(data, dict):
-                    self.axis[name_i].plot(indx, data[name_i], self.colors[name_i], label=name_i)
+                data_plot = data[count]
+
+            if isinstance(data_plot[0], np.ndarray):
+                data_plot = np.concatenate(data_plot, axis=0)
+                print 'Plot dimenstions data_plot', data_plot.shape
+                if data_plot.ndim >= 2:
+                    if data_plot.ndim != 2:
+                        data_plot = np.reshape(data_plot, (data_plot.shape[0], -1))
+                    for i in range(0, data_plot.shape[1]):
+                        print 'Plot dimenstions data_plot', data_plot.shape, ' data_plot[:,i] = ', data_plot[:,i].shape
+                        self.axis[name_i].plot(indx, data_plot[:, i], self.colors_all[i % len(self.colors_all)], label=name_i + ('_%d' % i))
                 else:
-                    self.axis[name_i].plot(indx, data[count], self.colors[name_i], label=name_i)
-                count += 1
-            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-                       ncol=2, mode="expand", borderaxespad=0.)
-            name = name_i
-        else:
-            raise ValueError("PLOT GRAPHS: string or list of strings are expected as graph name")
+                    self.axis[name_i].plot(indx, data_plot, self.colors[name_i], label=name_i)
+            else:
+                self.axis[name_i].plot(indx, data_plot, self.colors[name_i], label=name_i)
+            count += 1
+
+        name = name_i
 
         if title is not None:
             self.axis[name].set_title(title)
 
+        # plt.tight_layout()
+        self.axis[name_i].legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                   ncol=3, mode="expand", borderaxespad=0.)
+        # self.axis[name_i].legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        plt.draw()
+        plt.show()
+
+        print 'axis = ', self.axis[name], ' name = ', name
+        # self.adj_axis(self.figures[name], self.axis[name])
         plt.pause(.01)
         # plt.show()
         # plt.draw()
