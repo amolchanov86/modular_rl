@@ -117,6 +117,7 @@ def run_policy_gradient_algorithm(env, agent, usercfg=None, callback=None):
     tstart = time.time()
     seed_iter = itertools.count()
 
+    animate_rollout(env,agent, 500, first_time=True)
     for _ in xrange(cfg["n_iter"]):
         # Rollouts ========
         paths = get_paths(env, agent, cfg, seed_iter)
@@ -159,7 +160,7 @@ def rollout(env, agent, timestep_limit):
         data["action"].append(action)
         for (k,v) in agentinfo.iteritems():
             data[k].append(v)
-        env.render()
+        # env.render()
         ob,rew,done,envinfo = env.step(action)
         # print 'ob_avg = ', np.mean(ob)
         # print 'action = ', action
@@ -215,20 +216,24 @@ def pathlength(path):
 #             break
 #         time.sleep(delay)
 
-def animate_rollout(env, agent, n_timesteps, delay=.01):
+def animate_rollout(env, agent, n_timesteps, delay=.01, first_time=False):
     ob = env.reset()
     env.render()
-    done = False
+    if first_time:
+        done_cnt = 10
+    else:
+        done_cnt = 1
     i = 0
     rew_sum = 0.0
     reward = []
-    while not done:
+    while done_cnt > 0:
         i += 1
         a, _info = agent.act(ob)
-        (ob, _rew, done, _info) = env.step(a)
+        (ob, _rew, _done, _info) = env.step(a)
         reward.append(_rew)
         env.render()
-        if done:
+        if _done:
+            done_cnt -= 1
             print("terminated after %s timesteps" % i)
             print("Rew avg = %f" % np.mean(reward))
             break

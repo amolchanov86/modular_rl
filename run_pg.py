@@ -49,7 +49,7 @@ def wrap_env(env, logdir_root, cfg, params):
         # cfg['reward_interval']['mnist'] = [40000, None]
 
         env = brw.nnetReward(env, params=cfg,
-                             log_dir=logdir_root + 'classif_wrong_pred', framework='keras')
+                             log_dir=logdir_root + 'classif_log/', framework='keras')
 
         env.unwrapped.reload_model(yaml_path='config/blocks_config.yaml')
         # All additional parameters should be specified AFTER reloading (everytime you reload re-spicify them)

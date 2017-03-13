@@ -1,4 +1,4 @@
-plot_names: ['EpRewMean', ['rew_dist_px_mnist_force', 'rew_px_mnist_force', 'rew_mnist_force', 'rew_mnist', 'rew_total'], 'prob']
+plot_names: ['EpRewMean', ['rew_dist', 'rew_px', 'rew_force', 'rew_mnist', 'rew_total'], 'prob']
 reward_interval:
     # reward_interval: [start, end] when the reward is applied. If not specified then the reward is applied right away.
     # If null is specified as start (or the whole parameter) then the reward is not applied at all
