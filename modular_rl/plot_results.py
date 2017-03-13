@@ -107,13 +107,17 @@ class plot_graphs():
 
             if isinstance(data_plot[0], np.ndarray):
                 data_plot = np.concatenate(data_plot, axis=0)
-                print 'Plot dimenstions data_plot', data_plot.shape
                 if data_plot.ndim >= 2:
                     if data_plot.ndim != 2:
                         data_plot = np.reshape(data_plot, (data_plot.shape[0], -1))
-                    for i in range(0, data_plot.shape[1]):
-                        print 'Plot dimenstions data_plot', data_plot.shape, ' data_plot[:,i] = ', data_plot[:,i].shape
-                        self.axis[name_i].plot(indx, data_plot[:, i], self.colors_all[i % len(self.colors_all)], label=name_i + ('_%d' % i))
+                    start = 0
+                    base_name = name_i
+                    if name_i == 'prob':
+                        start = data_plot.shape[1] / 2
+                        base_name = 'cov'
+                    for i in range(start, data_plot.shape[1]):
+                        self.axis[name_i].plot(indx, data_plot[:, i], self.colors_all[(i - start) % len(self.colors_all)], label=base_name + ('_%d' % (i - start)))
+
                 else:
                     self.axis[name_i].plot(indx, data_plot, self.colors[name_i], label=name_i)
             else:
