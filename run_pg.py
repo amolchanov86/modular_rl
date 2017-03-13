@@ -43,6 +43,7 @@ def wrap_env(env, logdir_root, cfg, params):
     if env.spec.id[:6] == 'Blocks':
         ## !!!!!!!!!!! Temporary to test reward periods
         cfg['reward_interval'] = params['reward_interval']
+        print 'ENV WRAP: Reward intervals = ', cfg['reward_interval']
         # cfg['reward_interval']['dist']  = [0, 20000]
         # cfg['reward_interval']['px']    = [20000, 40000]
         # cfg['reward_interval']['mnist'] = [40000, None]
