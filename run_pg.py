@@ -169,9 +169,12 @@ if __name__ == "__main__":
             for (stat,val) in stats.items():
                 if np.asarray(val).ndim==0:
                     diagnostics[stat].append(val)
-                else:
-                    assert val.ndim == 1
+                elif val.ndim == 1:
+                    # assert val.ndim == 1
                     diagnostics[stat].extend(val)
+                else:
+                    diagnostics[stat].append(val)
+
             if args.snapshot_every and ((COUNTER % args.snapshot_every==0) or (COUNTER==args.n_iter)):
                 hdf['/agent_snapshots/%0.4i'%COUNTER] = np.array(cPickle.dumps(agent,-1))
 
@@ -204,5 +207,3 @@ if __name__ == "__main__":
         hdf['env_id'] = env.spec.id
         try: hdf['env'] = np.array(cPickle.dumps(env, -1))
         except Exception: print "failed to pickle env" #pylint: disable=W0703
-
-    env.monitor.close()

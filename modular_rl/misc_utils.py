@@ -138,9 +138,19 @@ def prepare_h5_file(args, out_dir):
     diagnostics = defaultdict(list)
     print("Saving results to %s"%fname)
     def save():
+        # Assumes that diagnostics is a list of values
         hdf.create_group("diagnostics")
         for (diagname, val) in diagnostics.items():
-            hdf["diagnostics"][diagname] = val
+            if np.array(val[0]).ndim < 2:
+                # Simple list or flattened array
+                hdf["diagnostics"][diagname] = val
+            else:
+                # If the list of values contains np arrays we will concatenate them along first dimension
+                # Thus one MUST MAKE SURE that the first dimension corresponds to iteration dimension
+                # Thus if you would like to keep information per episode, make sure that you have singular dimension as the first one
+                val_conc = np.concatenate(val, axis=0)
+                hdf["diagnostics"][diagname] = val_conc
+
 
     # Saving command line itself
     hdf["cmd"] = " ".join(sys.argv)

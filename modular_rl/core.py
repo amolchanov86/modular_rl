@@ -42,6 +42,16 @@ def add_episode_stats(stats, paths):
             rew_aux_cur = np.array([path[key].sum() for path in paths])
             stats[key] = rew_aux_cur.mean()
 
+    # Extracting mean probability for a policy
+    # In the case of diag gaussian it will be a vector of [average means,  avg covariances]
+    if len(paths) != 0 and 'prob' in paths[0]:
+        prob_list = np.array([np.squeeze(path['prob']) for path in paths])
+        # Using nparray[None] is a trick allowing to expand 0 axis, i.e.
+        # to have shape [1,N] instead of original [N,]
+        stats['prob'] = np.concatenate(prob_list, axis=0).mean(axis=0)[None]
+        print 'add_episode_stats: prob_shape = ', stats['prob'].shape
+
+
     stats["EpisodeRewards"] = episoderewards
     stats["EpisodeLengths"] = pathlengths
     stats["NumEpBatch"] = len(episoderewards)
@@ -167,6 +177,17 @@ def rollout(env, agent, timestep_limit):
     return data
 
 def do_rollouts_serial(env, agent, timestep_limit, n_timesteps, seed_iter):
+    """
+    Get paths from rollouts == list of path variables
+    Each path is a dictionary.
+    Every key in the path dictionary contains certain quantity per sample in the rollout.
+    :param env:
+    :param agent:
+    :param timestep_limit:
+    :param n_timesteps:
+    :param seed_iter:
+    :return:
+    """
     paths = []
     timesteps_sofar = 0
     while True:
@@ -361,6 +382,8 @@ class DiagGauss(ProbType):
         return np.random.randn(prob.shape[0], self.d).astype(floatX) * std_nd + mean_nd
     def maxprob(self, prob):
         return prob[:, :self.d]
+    def std(self, prob):
+        return prob[:, self.d:]
 
 def test_probtypes():
     theano.config.floatX = 'float64'
